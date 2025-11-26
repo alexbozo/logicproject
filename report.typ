@@ -45,34 +45,34 @@ In this document, $i in [0,M]$ and $j in [0,N]$ and $(i_0,j_0)$ is the starting 
 
 = First Question
 
-We define the proposition $x_((s,i,j))$ as true if the knight is in cell $(i, j)$ at step $s$.
-We have the following constraints:
+We define the boolean variable $x_(s,i,j)$ which is true if the knight is in cell $(i, j)$ at step $s$.
+The indices range as follows: steps $s in [0, M times N - 1]$, rows $i in [0, M-1]$, and columns $j in [0, N-1]$.
 
-+ At step $s=0$, the knight is at $(i_0, j_0)$.
-  $ x_((0, i_0, j_0)) $
+We encode the problem using the following constraints derived directly from the CNF clauses in our code:
 
-+ At every step $s$, the knight must be in exactly one cell.
-  This requires two clauses: "at least one" and "at most one".
-  $ and.big_(s) (or.big_(i,j) x_((s,i,j))) quad "and" quad and.big_(s) (and.big_((i,j) != (i',j')) (not x_((s,i,j)) or not x_((s,i',j')))) $
++ Initial Position: At step $s=0$, the knight must be at the given position $(i_0, j_0)$.
+  $ x_(0, i_0, j_0) $
 
-+ If the knight is at $(i,j)$ at step $s$, it must be at a valid neighbor $(i', j') in "Moves"(i,j)$ at step $s+1$.
-  $ and.big_(s, i, j) (x_((s,i,j)) arrow.r.double or.big_((i', j') in "Moves"(i,j)) x_((s+1, i', j'))) $
++ Valid Position at Each Step: For every step $s$, the knight must be in exactly one cell. We split this into two parts:
+  - At least one cell:
+    $ and.big_(s) ( or.big_(i,j) x_(s,i,j) ) $
+  - At most one cell (Pairwise Exclusion): For every pair of distinct cells, the knight cannot be in both.
+    $ and.big_(s) ( and.big_((i,j) != (i',j')) (not x_(s,i,j) or not x_(s,i',j')) ) $
 
-+ Every cell $(i,j)$ must be occupied at exactly one time step $s$.
-  $ and.big_(i,j) (or.big_(s) x_((s,i,j))) quad "and" quad and.big_(i,j) (and.big_(s != s') (not x_((s,i,j)) or not x_((s',i,j)))) $
++ Legal Moves (Transitions): For every step $s < M times N - 1$, if the knight is at $(i,j)$, it must move to a valid neighbor in the next step.
+  $ and.big_(s=0)^(M N - 2) and.big_(i,j) ( not x_(s,i,j) or or.big_((i', j') in "Moves"(i,j)) x_(s+1, i', j') ) $
+  This is equivalent to the implication $x_(s,i,j) => or.big x_(s+1, i', j')$.
+
++ Visit Each Cell Exactly Once: Every cell $(i,j)$ must be visited at exactly one time step.
+  - At least once:
+    $ and.big_(i,j) ( or.big_(s) x_(s,i,j) ) $
+  - At most once (Pairwise Exclusion): For any cell, it cannot be visited at two different steps $s$ and $s'$.
+    $ and.big_(i,j) ( and.big_(s != s') (not x_(s,i,j) or not x_(s',i,j)) ) $
 
 = Second Question
 
 
 = Third Question
-
-To count the number of solutions, we use a loop with Blocking Clauses:
-#set enum(numbering: "1.", spacing: 1.5em)
-1. Run the SAT solver.
-2. If a model (solution) $S$ is found, increment the counter.
-3. Add a new clause to the solver that invalidates $S$. The clause is the negation of the conjunction of all true variables in $S$:
-   $ not (and.big_((s,i,j) in S) x_((s,i,j))) equiv or.big_((s,i,j) in S) not x_((s,i,j)) $
-4. Repeat until the solver returns "UNSAT".
 
 
 = Fourth Question

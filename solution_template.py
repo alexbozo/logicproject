@@ -31,10 +31,14 @@ def question1(M, N, i0, j0):
                 break
             solver.add_clause([-variables[(0,i,j)]])
 
-    for s in range(M*N-1):
+    for s in range(M*N):
         # at each step, the knight is in exactly one cell
         ## the knight is in at least one cell
-        solver.add_clause([variables[(s, i, j)] for i in range(M) for j in range(N)])
+        cells_at_s = []
+        for i in range(M):
+            for j in range(N):
+                cells_at_s.append(variables[s, i, j])
+        solver.add_clause(cells_at_s)
         ## the knight is in at most one cell
         for i1 in range(M):
             for j1 in range(N):
@@ -47,6 +51,7 @@ def question1(M, N, i0, j0):
         # for each consecutive two steps `s` and `s+1`,
         # if the knight is in cell $(i, j)$ on step `s`,
         # then the knight must be in a cell that is accessible via a legal knight move on step `s+1`.
+    for s in range(M*N - 1):
         for i in range(M):
             for j in range(N):
                 possible_next_cells = []
@@ -55,7 +60,7 @@ def question1(M, N, i0, j0):
                     if 0 <= ni < M and 0 <= nj < N:
                         possible_next_cells.append(variables[(s + 1, ni, nj)])
 
-                    solver.add_clause([-variables[(s, i, j)]] + possible_next_cells)
+                solver.add_clause([-variables[(s, i, j)]] + possible_next_cells)
 
     # Constraint: Each cell (i, j) must be visited exactly once
     for i in range(M):
