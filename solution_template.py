@@ -7,7 +7,7 @@ def question1(M, N, i0, j0):
     solver = Glucose3()
 
     variables = {
-        (s, i, j): 1 + s * M * N + i * N + j
+        (s, i, j): 1 + (i * N) + j + (s * M * N)
         for s in range(M * N)
         for i in range(M)
         for j in range(N)
@@ -62,7 +62,17 @@ def question1(M, N, i0, j0):
 
                 solver.add_clause([-variables[(s, i, j)]] + possible_next_cells)
 
-    # Constraint: Each cell (i, j) must be visited exactly once
+    for s in range(1, M*N):
+        for i in range(M):
+            for j in range(N):
+                possible_previous_cells = []
+                for di, dj in knight_moves:
+                    ni, nj = i + di, j + dj
+                    if 0 <= ni < M and 0 <= nj < N:
+                        possible_previous_cells.append(variables[(s - 1, ni, nj)])
+                solver.add_clause([-variables[(s, i, j)]] + possible_previous_cells)
+
+    # Each cell (i, j) must be visited exactly once
     for i in range(M):
         for j in range(N):
             # 1. The cell must be visited at least once
@@ -74,10 +84,8 @@ def question1(M, N, i0, j0):
                     solver.add_clause([-variables[(s1, i, j)], -variables[(s2, i, j)]])
 
 
-# Solve
+    # Solve
     status = solver.solve()
-
-    # Prepare the solution grid (initialized to -1 as requested for failure cases)
     solution = [[-1 for _ in range(N)] for _ in range(M)]
 
     if status:
@@ -99,7 +107,19 @@ def question1(M, N, i0, j0):
 def question3():
     nb_sol = 0
 
-    # YOUR CODE HERE
+    for i in range(3):
+        for j in range(4):
+            solution, solver, variables = question1(3, 4, i, j)
+            if solution[0][0] == -1:
+                continue
+            while solver.solve():
+                nb_sol += 1
+                model = solver.get_model()
+                path = []
+                for n in model:
+                    if n > 0:
+                        path.append(-n)
+                solver.add_clause(path)
 
     return nb_sol
 

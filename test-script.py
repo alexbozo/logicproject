@@ -21,7 +21,7 @@ def plot_solution(solution):
 			cell.set_height(1.0 / M)
 			cell.set_width(1.0 / N)
 	pl.savefig("example-sol.pdf")
-	pl.show()
+	#pl.show()
 	return
 
 
