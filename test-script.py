@@ -28,16 +28,16 @@ def plot_solution(solution):
 if __name__ == '__main__':
 
 	# Question 1
-	plot_solution(st.question1(5, 5, 0, 0)[0]) # there should be a solution
-	plot_solution(st.question1(3, 7, 0, 0)[0]) # there should be a solution
-	plot_solution(st.question1(7, 5, 3, 1)[0]) # there should be a solution
-	plot_solution(st.question1(4, 4, 0, 0)[0]) # there should not be a solution
+	#plot_solution(st.question1(5, 5, 0, 0)[0]) # there should be a solution
+	#plot_solution(st.question1(3, 7, 0, 0)[0]) # there should be a solution
+	#plot_solution(st.question1(7, 5, 3, 1)[0]) # there should be a solution
+	#plot_solution(st.question1(4, 4, 0, 0)[0]) # there should not be a solution
 
 	# Question 2
-	start = time.time()
-	plot_solution(st.question1(8, 8, 0, 0)[0])
-	end = time.time()
-	print(end - start)
+	#start = time.time()
+	#plot_solution(st.question1(8, 8, 0, 0)[0])
+	#end = time.time()
+	#print(end - start)
 	# Question 3
 	print("Number of solutions for a 3x4 chessboard: " + str(st.question3()))
 

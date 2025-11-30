@@ -138,69 +138,78 @@ def question3():
 
 
 def question4():
+    def are_paths_symmetrical(path1, path2):
+        # for each cell (i, j), there a 3 other symmetrical cells, stored in sym_cells[(i, j)]
+        sym_cells = {}
+        for i in range(3):
+            for j in range(4):
+                sym_cells[(i, j)] = {
+                    (2 - i, j),
+                    (i, 3 - j),
+                    (2 - i, 3 - j)
+                }
+
+        visited_cells = [[], []]
+        for path in [path1, path2]:
+            if path == path1:
+                index = 0
+            else:
+                index = 1
+            for n in path:
+                # n = 1 + (i * N) + j + (s * M * N)
+                j = (n - 1) % 4
+                temp = (n - 1) // 4
+                i = temp % 3
+                # s = temp // 3
+                visited_cells[index].append((i, j))
+
+        for n in range(len(visited_cells[0])):
+            for cell1, cell2 in visited_cells[0][n], visited_cells[1][n]:
+                for sym_cell in sym_cells[cell1]:
+                    if cell2 == sym_cell:
+                        return True
+        return False
+
     nb_sol = 0
-    found_solutions = set()
 
-    sym_cells = {}
-    for i in range(3):
-        for j in range(4):
-            sym_cells[(i, j)] = {
-                (2 - i, j),
-                (i, 3 - j),
-                (2 - i, 3 - j)
-            }
-
-    for i in range(3):
-        for j in range(4):
-            solution_template, solver, variables = question1(3, 4, i, j)
-
-            if solution_template[0][0] == -1:
+    for i0 in range(3):
+        for j0 in range(4):
+            solution, solver, variables = question1(3, 4, i0, j0)
+            if solution[0][0] == -1:
                 continue
 
+            # we store every path that leads to a solution in paths, a list of lists
+            paths = []
             while solver.solve():
                 model = solver.get_model()
-                current_grid = [[0] * 3 for _ in range(4)] # 2D grid (M*N) initialized to 0
-                model_set = set(model)
-
-                # get current grid
-                for s in range(3 * 4):
-                    for i in range(3):
-                        for j in range(4):
-                            if variables[(s, i, j)] in model_set:
-                                current_grid[i][j] = s
-
-                # convert current grid to tuples for unicity
-                grid_tuple = tuple(tuple(row) for row in current_grid)
-
-
-                is_new = True
-                for sym_grid in get_symmetries(grid_tuple):
-                    if sym_grid in found_solutions:
-                        is_new = False
-                        break
-
-                if is_new:
-                    found_solutions.add(grid_tuple)
-
-                path = [-x for x in model if x > 0]
+                path = []
+                for n in model:
+                    if n > 0:
+                        path.append(-n)
                 solver.add_clause(path)
-    nb_sol = len(found_solutions)
+                paths.append(path)
+
+            # only 1 path => only 1 solution for this starting position
+            if len(paths) == 1:
+                nb_sol += 1
+                continue
+
+            # if there are at least 2 paths, we check every path's symmetry in comparison to the first found path
+            # the number of solutions we then have is equal to 1 + number of non symetrical paths in comparison to the first found path
+            nb_sol += 1
+            path_nb = 0
+            for path in paths:
+                if path_nb >= 1:
+                    if not are_paths_symmetrical(paths[0], paths[path_nb]):
+                        nb_sol += 1
+                path_nb += 1
+
     return nb_sol
 
 
 def question5(M, N, i0, j0):
-    def is_solution_unique(solver):
-
-        return False
-
+    nb_sol = 0
     constraints = []
-
-    solution, solver, variables = question1(M, N, i0, j0)
-    if solution[0][0] == -1:
-        return constraints
-
-    if is_solution_unique(solver):
-        return [(0, i0, j0)]
 
 
 
