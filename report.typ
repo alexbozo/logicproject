@@ -54,7 +54,7 @@ We encode the problem using the following constraints:
 
 + The knight can only move according to chess rules. We split this into two parts:
   - For every step $s < M times N - 1$, if the knight is at $(i,j)$, it must move to a valid cell at step $s+1$.
-  $ and.big_(s=0)^(M times N - 1) and.big_(i,j) ( not x_(s,i,j) or or.big_("Valid"(i', j')) x_(s+1, i', j') ) $
+  $ and.big_(s=0)^(M times N - 2) and.big_(i,j) ( not x_(s,i,j) or or.big_("Valid"(i', j')) x_(s+1, i', j') ) $
   - For every step $s > 0$, the knight must have been in a valid cell at step $s-1$.
   $ and.big_(s=1)^(M times N) and.big_(i,j) ( not x_(s,i,j) or or.big_("Valid"(i', j')) x_(s-1, i', j') ) $
 
@@ -70,9 +70,9 @@ We encode the problem using the following constraints:
 = Third Question
 
 For each starting position $(i_0, j_0)$, we execute `question1()`.
-For each valid solution found from $(i_0, j_0)$, `nb_sol` is incremented and the solution
-is made insatisfiable by negating every $(s, i, j)$ that validates it.
-Other solutions from the same $(i_0, j_0)$ starting position are then searched with these constraints.
+For each valid solution found from $(i_0, j_0)$, `nb_sol` is incremented and the found solution
+is made insatisfiable by negating every $(s, i, j)$ that satisfies it. $forall n in "Model(question1("i_0,j_0,3,4"))"$,
+$ or.big_(n > 0) not n $
 
 = Fourth Question
 

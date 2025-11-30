@@ -55,7 +55,7 @@ def question1(M, N, i0, j0):
         # for each consecutive two steps `s` and `s+1`,
         # if the knight is in cell $(i, j)$ on step `s`,
         # then the knight must be in a cell that is accessible via a legal knight move on step `s+1`.
-        if s <= M*N - 1:
+        if s < M*N - 1:
             for i in range(M):
                 for j in range(N):
                     possible_next_cells = []
@@ -120,10 +120,10 @@ def question1(M, N, i0, j0):
 def question3():
     nb_sol = 0
 
-    for i in range(3):
-        for j in range(4):
-            solution, solver, variables = question1(3, 4, i, j)
-            if solution[0][0] == -1:
+    for i0 in range(3):
+        for j0 in range(4):
+            solution, solver, _ = question1(3, 4, i0, j0)
+            if solution[0][0] == -1: # invalid solution
                 continue
             while solver.solve():
                 nb_sol += 1
@@ -140,31 +140,32 @@ def question3():
 def question4():
     nb_sol = 0
     found_solutions = set()
-    M, N = 3, 4
 
-    def get_symmetries(grid):
-        s1 = grid
-        s2 = tuple(tuple(row[::-1]) for row in grid)
-        s3 = tuple(grid[::-1])
-        s4 = tuple(tuple(row[::-1]) for row in grid[::-1])
-        return [s1, s2, s3, s4]
+    sym_cells = {}
+    for i in range(3):
+        for j in range(4):
+            sym_cells[(i, j)] = {
+                (2 - i, j),
+                (i, 3 - j),
+                (2 - i, 3 - j)
+            }
 
-    for i in range(M):
-        for j in range(N):
-            solution_template, solver, variables = question1(M, N, i, j)
+    for i in range(3):
+        for j in range(4):
+            solution_template, solver, variables = question1(3, 4, i, j)
 
             if solution_template[0][0] == -1:
                 continue
 
             while solver.solve():
                 model = solver.get_model()
-                current_grid = [[0] * N for _ in range(M)] # 2D grid (M*N) initialized to 0
+                current_grid = [[0] * 3 for _ in range(4)] # 2D grid (M*N) initialized to 0
                 model_set = set(model)
 
                 # get current grid
-                for s in range(M * N):
-                    for i in range(M):
-                        for j in range(N):
+                for s in range(3 * 4):
+                    for i in range(3):
+                        for j in range(4):
                             if variables[(s, i, j)] in model_set:
                                 current_grid[i][j] = s
 
