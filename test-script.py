@@ -34,8 +34,10 @@ if __name__ == '__main__':
 	plot_solution(st.question1(4, 4, 0, 0)[0]) # there should not be a solution
 
 	# Question 2
+	start = time.time()
 	plot_solution(st.question1(8, 8, 0, 0)[0])
-
+	end = time.time()
+	print(end - start)
 	# Question 3
 	print("Number of solutions for a 3x4 chessboard: " + str(st.question3()))
 

@@ -33,40 +33,35 @@
 = Introduction
 
 This report is about solving the knight's tour problem using a SAT solver.
-We'll need a variable to keep track of the step the program is in.
-The variable $s$ (for step) ranges from $0$ to $M times N - 1$.
 
-We now have a way to add clauses to our solver. Each $(s,i,j)$ tuple describes a proposition.
-The following proposition means "The knight is in cell (i, j) at step $s$" : $x_((s,i,j))$.
-We also map each $(s,i,j)$ to one unique ID with a dictionary.
-
-In this document, $i in [0,M]$ and $j in [0,N]$ and $(i_0,j_0)$ is the starting cell.
-
+We define $s$ as the step the knight is in.
+For instance, when the knight is in the initial position $(i_0, j_0)$, $s = 0$.
+We define the boolean variable $x_(s,i,j)$ which is True iff the knight is in cell $(i, j)$ at step $s$.
+The indices range as follows: steps $s in [0, M times N - 1]$, rows $i in [0, M-1]$, and columns $j in [0, N-1]$.
 
 = First Question
 
-We define the boolean variable $x_(s,i,j)$ which is true if the knight is in cell $(i, j)$ at step $s$.
-The indices range as follows: steps $s in [0, M times N - 1]$, rows $i in [0, M-1]$, and columns $j in [0, N-1]$.
+We encode the problem using the following constraints:
 
-We encode the problem using the following constraints derived directly from the CNF clauses in our code:
-
-+ Initial Position: At step $s=0$, the knight must be at the given position $(i_0, j_0)$.
++ At step $s=0$, the knight must be at the given position $(i_0, j_0)$.
   $ x_(0, i_0, j_0) $
 
-+ Valid Position at Each Step: For every step $s$, the knight must be in exactly one cell. We split this into two parts:
++ For every step $s$, the knight must be in exactly one cell. We split this into two parts:
   - At least one cell:
     $ and.big_(s) ( or.big_(i,j) x_(s,i,j) ) $
-  - At most one cell (Pairwise Exclusion): For every pair of distinct cells, the knight cannot be in both.
+  - At most one cell: For every pair of distinct cells, the knight cannot be in both.
     $ and.big_(s) ( and.big_((i,j) != (i',j')) (not x_(s,i,j) or not x_(s,i',j')) ) $
 
-+ Legal Moves (Transitions): For every step $s < M times N - 1$, if the knight is at $(i,j)$, it must move to a valid neighbor in the next step.
-  $ and.big_(s=0)^(M N - 2) and.big_(i,j) ( not x_(s,i,j) or or.big_((i', j') in "Moves"(i,j)) x_(s+1, i', j') ) $
-  This is equivalent to the implication $x_(s,i,j) => or.big x_(s+1, i', j')$.
++ The knight can only move according to chess rules. We split this into two parts:
+  - For every step $s < M times N - 1$, if the knight is at $(i,j)$, it must move to a valid cell at step $s+1$.
+  $ and.big_(s=0)^(M times N - 1) and.big_(i,j) ( not x_(s,i,j) or or.big_("Valid"(i', j')) x_(s+1, i', j') ) $
+  - For every step $s > 0$, the knight must have been in a valid cell at step $s-1$.
+  $ and.big_(s=1)^(M times N) and.big_(i,j) ( not x_(s,i,j) or or.big_("Valid"(i', j')) x_(s-1, i', j') ) $
 
-+ Visit Each Cell Exactly Once: Every cell $(i,j)$ must be visited at exactly one time step.
++ Every cell $(i,j)$ must be visited at exactly one time step.
   - At least once:
     $ and.big_(i,j) ( or.big_(s) x_(s,i,j) ) $
-  - At most once (Pairwise Exclusion): For any cell, it cannot be visited at two different steps $s$ and $s'$.
+  - At most once: For any cell, it cannot be visited at two different steps $s$ and $s'$.
     $ and.big_(i,j) ( and.big_(s != s') (not x_(s,i,j) or not x_(s',i,j)) ) $
 
 = Second Question
@@ -74,8 +69,21 @@ We encode the problem using the following constraints derived directly from the 
 
 = Third Question
 
+For each starting position $(i_0, j_0)$, we execute `question1()`.
+For each valid solution found from $(i_0, j_0)$, `nb_sol` is incremented and the solution
+is made insatisfiable by negating every $(s, i, j)$ that validates it.
+Other solutions from the same $(i_0, j_0)$ starting position are then searched with these constraints.
 
 = Fourth Question
 
+The idea is to iterate through all starting positions $(i, j)$ on the board
+and use `question1(3, 4, i, j)` for each starting position.
+For each found solution, the 3 symetries are created and stored in a set to exclude possible duplicates.
 
 = Fifth Question
+
+We start at starting position $(i_0, j_0)$ and firstly test if
+this starting position outputs a solution by executing `question1()`.
+If so, we test the uniqueness of the solution.
+If the solution is unique, we only return $(0, i_0, j_0)$.
+If there are two or more solutions,
